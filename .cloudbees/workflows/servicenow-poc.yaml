@@ -4,6 +4,7 @@ name: servicenow-injection-poc
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 jobs:
   exploit:
     steps:
