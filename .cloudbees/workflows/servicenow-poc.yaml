@@ -2,8 +2,6 @@ apiVersion: automation.cloudbees.io/v1alpha1
 kind: workflow
 name: servicenow-injection-poc
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 jobs:
   exploit:
